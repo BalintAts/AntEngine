@@ -1,21 +1,20 @@
 use std::collections::HashMap;
 
 //todo: implement default
+
+//ez nem lesz, a GO csak egy Id
 pub struct GameObject {
     pub id: String, //todo: str or String?
-    pub pos_x: f64,
-    pub pos_y: f64,
-    pub vel_x: f64,
-    pub vel_y: f64,
-    pub rotation: f64,
-    pub shape: Circle,
-    pub color: u32, //hexa
-    pub bounding_width: i32,
-    pub bounding_height: i32,
-    pub physics_body: Circle, //Shape trait
-    pub script: String,       //Json
-    pub childs: HashMap<String, GameObject>,
+    pub position: Position,
+    pub velocity: Velocity,
+    // pub rotation: f64,
+    pub renderable: Renderable, //lehetne shape array
+    // pub physics_body: Renderable, //Shape trait
+    // pub script: String,           //Json
+    pub childs: Vec<String>, //id-s of entities
 }
+
+//HASZNÁLJ GENERIKET!!!   <T>  !!!  Nested types:  <T<K>>
 
 //components
 pub struct Position {
@@ -36,20 +35,43 @@ pub struct Velocity {
     pub y: f64,
 }
 
-pub struct Shape {
+pub struct Renderable {
     //circle
+    pub id: String,
     pub r: f64,
-    // pub tr: GhraphicsTransform  (relative to gameobject trancform)
+    pub x: f64, //relative offset from go
+    pub y: f64,
+    pub color: u32, // pub tr: GhraphicsTransform  (relative to gameobject trancform)
+}
+
+impl Renderable {
+    //Circle in this case
+    pub fn Get_Bounding_Width(&self) -> i32 {
+        return self.r as i32 * 2; //interer, mert pixel coordinategj
+    }
+
+    pub fn Get_Bounding_Height(&self) -> i32 {
+        return self.r as i32 * 2;
+    }
+
+    fn draw(&self, pixel_index_x: i32, pixel_index_y: i32) -> u32 {
+        if (pixel_index_x) * (pixel_index_x) + (pixel_index_y) * (pixel_index_y)
+            <= self.r as i32 * self.r as i32
+        {
+            return self.color;
+        }
+        return 0;
+    }
 }
 
 pub struct Graphic {
     //trait graphic
     //lista shape-ekkel, sprite-ekkel (sptritelista animációhoz) és a posiition + rotation 9 scale offsetekkel
-    pub shapes: Vec<Shape>,
+    pub shapes: Vec<Renderable>,
 }
 
 //movement system
-fn to_move(mut pos: &mut Position, mut vel: &mut Velocity) {
+pub fn to_move(mut pos: &mut Position, mut vel: &mut Velocity) {
     fall(&mut pos, &mut vel);
 }
 
@@ -57,41 +79,33 @@ fn fall(pos: &mut Position, vel: &mut Velocity) {
     vel.y += 0.5;
     pos.y += vel.y;
 }
-
 //end movement system
 
-fn render(graphic: Graphic) //GameObjectTransform, RelativeTransform){
-{
-}
+pub fn render(
+    shape: &Renderable,
+    go_pos: &Position,
+    buffer: &mut Vec<u32>,
+    screen_width: usize,
+    screen_height: usize,
+) {
+    let rounded_x = (go_pos.x + shape.x).round() as i32;
+    let rounded_y = (go_pos.y + shape.y).round() as i32;
 
-impl GameObject {
-    // pub fn to_move(&mut self) {
-    //     self.fall();
-    // }
-
-    // fn fall(&mut self) {
-    //     self.vel_y += 0.5;
-    //     self.pos_y += self.vel_y;
-    // }
-
-    pub fn draw(&self, pixel_index_x: i32, pixel_index_y: i32) -> u32 {
-        if self.shape.draw(
-            self.pos_x + self.bounding_width as f64 / 2 as f64 - pixel_index_x as f64,
-            self.pos_y + self.bounding_height as f64 / 2 as f64 - pixel_index_y as f64,
-        ) {
-            return self.color;
+    for pix_y in rounded_y..(rounded_y + shape.Get_Bounding_Height()) {
+        for pix_x in rounded_x..(rounded_x + shape.Get_Bounding_Width()) {
+            let signed_buffer_index = pix_y * screen_width as i32 + pix_x;
+            let buffer_index = signed_buffer_index as usize;
+            if buffer_index
+                // < (WIDTH - graphic.bounding_width as usize / 2)
+                //     * (HEIGHT - graphic.bounding_height as usize / 2)
+                < buffer.len() - shape.Get_Bounding_Width() as usize / 2 - shape.Get_Bounding_Height() as usize / 2
+                && buffer_index
+                    >= shape.Get_Bounding_Width() as usize / 2
+                        * shape.Get_Bounding_Height() as usize
+                        / 2
+            {
+                buffer[buffer_index] = shape.draw(rounded_x, rounded_y);
+            }
         }
-        return 0x0000ff;
-    }
-}
-
-pub struct Circle {
-    pub radius: f64,
-}
-
-impl Circle {
-    fn draw(&self, pixel_index_x: f64, pixel_index_y: f64) -> bool {
-        return (pixel_index_x) * (pixel_index_x) + (pixel_index_y) * (pixel_index_y)
-            <= self.radius * self.radius;
     }
 }
