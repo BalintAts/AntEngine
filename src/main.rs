@@ -62,29 +62,6 @@ fn apply_render_system(gameObjects: &Vec<GameObject>, buffer: &mut Vec<u32>) {
         )
     }
 }
-//fn render(graphcis)
-// forloop graphics forloop shapes
-
-// fn render(gameObject: &GameObject, buffer: &mut Vec<u32>) {
-//     let rounded_x = gameObject.pos_x.round() as i32;
-//     let rounded_y = gameObject.pos_y.round() as i32;
-
-//     for y in rounded_y..(rounded_y + gameObject.bounding_height) {
-//         for x in rounded_x..(rounded_x + gameObject.bounding_width) {
-//             let signed_buffer_index = y * WIDTH as i32 + x;
-//             let buffer_index = signed_buffer_index as usize;
-//             if (buffer_index
-//                 < (WIDTH - gameObject.bounding_width as usize / 2)
-//                     * (HEIGHT - gameObject.bounding_height as usize / 2)
-//                 && buffer_index
-//                     >= gameObject.bounding_width as usize / 2 * gameObject.bounding_height as usize
-//                         / 2)
-//             {
-//                 buffer[buffer_index] = gameObject.draw(x as i32, y as i32);
-//             }
-//         }
-//     }
-// }
 
 fn clear(buffer: &mut Vec<u32>) {
     for y in 0..HEIGHT {
@@ -98,6 +75,7 @@ fn clear(buffer: &mut Vec<u32>) {
 fn create_and_push_gameobject_random(game_objects: &mut Vec<GameObject>) {
     //ez majd a level impl-jében lesz, és akkor nem lesz paraméter
     //todo: ezt nem így kell, hanem a kompnonenseket kell létrehozni, majd adni nekik közös id-t
+
     let id = String::from("something");
     let mut rng = rand::thread_rng();
     let p_x = rng.gen_range(0..WIDTH) as f64;
@@ -112,8 +90,8 @@ fn create_and_push_gameobject_random(game_objects: &mut Vec<GameObject>) {
             id: id.clone(),
         },
         velocity: Velocity {
-            x: p_x,
-            y: p_y,
+            x: 0.0,
+            y: 0.0,
             id: id.clone(),
         },
         renderable: Renderable {

@@ -60,7 +60,7 @@ impl Renderable {
         {
             return self.color;
         }
-        return 0;
+        return 0x0000ff;
     }
 }
 
@@ -96,15 +96,15 @@ pub fn render(
             let signed_buffer_index = pix_y * screen_width as i32 + pix_x;
             let buffer_index = signed_buffer_index as usize;
             if buffer_index
-                // < (WIDTH - graphic.bounding_width as usize / 2)
-                //     * (HEIGHT - graphic.bounding_height as usize / 2)
-                < buffer.len() - shape.Get_Bounding_Width() as usize / 2 - shape.Get_Bounding_Height() as usize / 2
+                < buffer.len()
+                    - shape.Get_Bounding_Width() as usize / 2
+                    - shape.Get_Bounding_Height() as usize / 2
                 && buffer_index
                     >= shape.Get_Bounding_Width() as usize / 2
                         * shape.Get_Bounding_Height() as usize
                         / 2
             {
-                buffer[buffer_index] = shape.draw(rounded_x, rounded_y);
+                buffer[buffer_index] = shape.draw(rounded_x, rounded_y); //ide nem a pixel kkordináták kellenek, hanem a bounding boxban levő koordináták
             }
         }
     }
