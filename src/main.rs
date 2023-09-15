@@ -1,10 +1,17 @@
 use minifb::{Key, Scale, Window, WindowOptions};
 use rand::Rng;
-use std::collections::HashMap;
 
-mod gameobject;
-mod visualScriptInterpreter;
-use gameobject::{render, to_move, GameObject, Position, Renderable, Velocity};
+mod components_module;
+use components_module::components::{Graphic, Position, Renderable, Velocity};
+
+mod renderer;
+use renderer::render_system::{apply_render_system, clear};
+
+mod game_object_module;
+use game_object_module::game_object::GameObject;
+
+mod movement;
+use movement::movement_system::to_move;
 
 const WIDTH: usize = 900;
 const HEIGHT: usize = 600;
@@ -35,7 +42,7 @@ fn main() {
         for game_object in &mut *game_objects {
             to_move(&mut game_object.position, &mut game_object.velocity);
         }
-        apply_render_system(&game_objects, &mut buffer);
+        apply_render_system(&game_objects, &mut buffer, WIDTH, HEIGHT);
         if frame_counter_to_spawn == 10 {
             create_and_push_gameobject_random(&mut game_objects);
             frame_counter_to_spawn = 0;
@@ -43,7 +50,7 @@ fn main() {
 
         window.update_with_buffer(&buffer).unwrap();
 
-        clear(&mut buffer);
+        clear(&mut buffer, WIDTH, HEIGHT);
 
         frame_counter_to_spawn += 1;
     }
@@ -51,25 +58,25 @@ fn main() {
 
 //rendersystem
 
-fn apply_render_system(gameObjects: &Vec<GameObject>, buffer: &mut Vec<u32>) {
-    for gameobject in gameObjects {
-        render(
-            &gameobject.renderable,
-            &gameobject.position,
-            buffer,
-            WIDTH,
-            HEIGHT,
-        )
-    }
-}
+// fn apply_render_system(game_objects: &Vec<GameObject>, buffer: &mut Vec<u32>) {
+//     for gameobject in game_objects {
+//         render(
+//             &gameobject.renderable,
+//             &gameobject.position,
+//             buffer,
+//             WIDTH,
+//             HEIGHT,
+//         )
+//     }
+// }
 
-fn clear(buffer: &mut Vec<u32>) {
-    for y in 0..HEIGHT {
-        for x in 0..WIDTH {
-            buffer[y * WIDTH + x] = 0;
-        }
-    }
-}
+// fn clear(buffer: &mut Vec<u32>) {
+//     for y in 0..HEIGHT {
+//         for x in 0..WIDTH {
+//             buffer[y * WIDTH + x] = 0;
+//         }
+//     }
+// }
 
 //spawnersystem
 fn create_and_push_gameobject_random(game_objects: &mut Vec<GameObject>) {
